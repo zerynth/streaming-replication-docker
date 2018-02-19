@@ -1,0 +1,20 @@
+version: '3'
+
+services:
+  timescale-primary:
+    build: '.'
+    restart: 'always'
+    env_file:
+        - primary.env
+    ports:
+        - 5432:5432
+
+  timescale-replica:
+    build: '.'
+    restart: 'always'
+    env_file:
+        - replica.env
+    links:
+     - 'timescale-primary'
+    ports:
+        - 5433:5432
