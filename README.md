@@ -1,6 +1,6 @@
 # Streaming Replication Container Setup for TimescaleDB
 
-This repository creates a configurable streaming replication TimescaleDB cluster with 1 primary and 1 replica.
+Use this repository to launch a streaming replication enabled TimescaleDB cluster with 1 primary and 1 replica.
 To learn more about streaming replication in PostgreSQL, take a look at the [TimescaleDB Streaming Replication Documentation][timescale-streamrep-docs].
 
 The `Dockerfile` takes advantage of PostgreSQL's [init script hooks][https://docs.docker.com/samples/library/postgres/#arbitrary---user-notes] and runs
@@ -9,7 +9,7 @@ The `Dockerfile` takes advantage of PostgreSQL's [init script hooks][https://doc
 
 ## Running
 
-The containers can either be created through regular `docker` commands or through `docker-compose` using the `docker-compose.yml` file.
+The containers can either be created through regular Docker commands or through `Docker Swarm` / `Docker Compose` using the `stack.yml` file.
 
 ### Run with Docker
 
@@ -22,16 +22,39 @@ After ensuring the variables in `primary.env` and `replica.env` match your desir
 ./start_containers.sh
 ```
 
-This will create 2 containers named `timescale-primary` and `timescale-replica`.
+This will create and run 2 replication-ready containers named `timescale-primary` and `timescale-replica`.
+
+### Run with Docker Swarm
+
+Provided you already have a swarm intialized, you can deploy the stack using `stack.yml` after building the image:
+
+```bash
+docker build -t timescale-replication .
+docker stack deploy replication --compose-file stack.yml
+```
+
+`stack.yml` uses `primary.env` and `replica.env` for its environment variables, so make changes in those files to tweak the settings.
+
+`NOTE`: The `stack.yml` file sets the `REPLICATION_SUBNET` on the primary to `10.0.0.0/24` by default, allowing all traffic within the service's
+internal network to connect as the replica user. To tweak this ACL, change the `REPLICATION_SUBNET` variable in `stack.yml`. Note, however, that the
+technique we use for the regular Docker setup (using `getent` to resolve the Docker hostname to an exact IP -- see `replication.sh`) does *not* work inside of `Swarm`. The Docker
+hostname resolves to Docker's `service` IP, which points to the same container, but the container itself connects from a separate internal IP, which will render any `/32` subnet
+CIDR on the primary ineffective.
 
 ### Run with Docker Compose
 
-`docker-compose.yml` retrieves the relevant environment variables from `primary.env` and `replica.env` then uses the `Dockerfile` to retrieve and
-run `replication.sh`. To run with `docker-compose`, run:
+To run with Docker Compose, run:
 
 ```bash
-docker-compose up
+docker build -t timescale-replication .
+docker-compose -f stack.yml up
 ```
+
+`NOTE`: By default `stack.yml` sets the `REPLICATION_SUBNET` (used by pg_hba to authorize IPs for replication) to ` 10.0.0.0/24` for compatibility with `Docker Swarm` (see above).
+Depending on your network configuration this may not work with Docker Compose. Either overwrite it with an appropriate subnet setting (`172.0.0.0/8` will allow all containers
+on the default Docker network bridge to connect as replicas) or remove the variable altogether to force the `replication.sh` to use the full IP of the replica, which should
+work with Docker Compose but will not work with Docker Swarm.
+
 
 ## Configuration
 
