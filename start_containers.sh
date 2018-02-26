@@ -1,5 +1,8 @@
 #! /bin/bash
 
+docker rm timescale-primary timescale-replica
+docker network rm timescale-replication
+
 docker build -t timescale-primary .
 docker build -t timescale-replica .
 

@@ -3,7 +3,7 @@
 Use this repository to launch a streaming replication enabled TimescaleDB cluster with 1 primary and 1 replica.
 To learn more about streaming replication in PostgreSQL, take a look at the [TimescaleDB Streaming Replication Documentation][timescale-streamrep-docs].
 
-The `Dockerfile` takes advantage of PostgreSQL's [init script hooks][https://docs.docker.com/samples/library/postgres/#how-to-extend-this-image] and runs
+The `Dockerfile` takes advantage of PostgreSQL's [init script hooks](https://docs.docker.com/samples/library/postgres/#how-to-extend-this-image) and runs
 `replication.sh` after the database has been initialized to configure the replication settings. `replication.sh` uses the variables defined in
 `primary.env` and `replica.env`, which are meant to be configured depending on your desired replication settings, credentials, and networking preferences.
 
