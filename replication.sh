@@ -30,7 +30,7 @@ if  [[ -z $REPLICATION_SUBNET ]]; then
 fi
 
 cat >> ${PGDATA}/pg_hba.conf <<EOF
-host     replication     ${REPLICA_POSTGRES_USER}   ${REPLICATION_SUBNET}       trust
+host     replication     ${REPLICA_POSTGRES_USER}   ${REPLICATION_SUBNET}       md5
 EOF
 
 # Restart postgres and add replication slot
@@ -44,8 +44,15 @@ else
 pg_ctl -D ${PGDATA} -m fast -w stop
 rm -rf ${PGDATA}
 
+# Create a pg pass file so pg_basebackup can send a password to the primary
+cat > ~/.pgpass.conf <<EOF
+*:5432:replication:${POSTGRES_USER}:${POSTGRES_PASSWORD}
+EOF
+chown postgres:postgres ~/.pgpass.conf
+chmod 0600 ~/.pgpass.conf
+
 # Backup replica from the primary
-until pg_basebackup -h ${REPLICATE_FROM} -D ${PGDATA} -U ${POSTGRES_USER} -vP -w
+until PGPASSFILE=~/.pgpass.conf pg_basebackup -h ${REPLICATE_FROM} -D ${PGDATA} -U ${POSTGRES_USER} -vP -w
 do
     # If docker is starting the containers simultaneously, the backup may encounter
     # the primary amidst a restart. Retry until we can make contact.
@@ -56,7 +63,7 @@ done
 # Create the recovery.conf file so the backup knows to start in recovery mode
 cat > ${PGDATA}/recovery.conf <<EOF
 standby_mode = on
-primary_conninfo = 'host=${REPLICATE_FROM} port=5432 user=${POSTGRES_USER} application_name=${REPLICA_NAME}'
+primary_conninfo = 'host=${REPLICATE_FROM} port=5432 user=${POSTGRES_USER} password=${POSTGRES_PASSWORD} application_name=${REPLICA_NAME}'
 primary_slot_name = '${REPLICA_NAME}_slot'
 EOF
 
