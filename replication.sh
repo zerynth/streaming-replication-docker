@@ -10,8 +10,8 @@ cat >> ${PGDATA}/postgresql.conf <<EOF
 listen_addresses= '*'
 wal_level = replica
 hot_standby = on
-max_wal_senders = 2
-max_replication_slots = 2
+max_wal_senders = 1
+max_replication_slots = 1
 synchronous_commit = ${SYNCHRONOUS_COMMIT}
 EOF
 
