@@ -3,16 +3,15 @@
 # CONFIGURE PRIMARY
 if [[ -z $REPLICATE_FROM ]]; then
 
-psql -U postgres -c "SET password_encryption = true;"
-psql -U postgres -c "CREATE ROLE $REPLICA_POSTGRES_USER WITH REPLICATION PASSWORD '$REPLICA_POSTGRES_PASSWORD' LOGIN"
+psql -U postgres -c "SET password_encryption = 'scram-sha-256'; CREATE ROLE $REPLICA_POSTGRES_USER WITH REPLICATION PASSWORD '$REPLICA_POSTGRES_PASSWORD' LOGIN;"
 
 # Add replication settings to primary postgres conf
 cat >> ${PGDATA}/postgresql.conf <<EOF
 listen_addresses= '*'
 wal_level = replica
 hot_standby = on
-max_wal_senders = 1
-max_replication_slots = 1
+max_wal_senders = 2
+max_replication_slots = 2
 synchronous_commit = ${SYNCHRONOUS_COMMIT}
 EOF
 
@@ -31,7 +30,7 @@ if  [[ -z $REPLICATION_SUBNET ]]; then
 fi
 
 cat >> ${PGDATA}/pg_hba.conf <<EOF
-host     replication     ${REPLICA_POSTGRES_USER}   ${REPLICATION_SUBNET}       md5
+host     replication     ${REPLICA_POSTGRES_USER}   ${REPLICATION_SUBNET}       scram-sha-256
 EOF
 
 # Restart postgres and add replication slot
@@ -60,6 +59,9 @@ do
     sleep 1
     echo "Retrying backup . . ."
 done
+
+# Remove pg pass file -- it is not needed after backup is restored
+rm ~/.pgpass.conf
 
 # Create the recovery.conf file so the backup knows to start in recovery mode
 cat > ${PGDATA}/recovery.conf <<EOF
