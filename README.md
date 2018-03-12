@@ -89,5 +89,3 @@ The setting defaults to `off`, enabling fully asynchronous streaming
 replication. The other valid values are `on`, `local`, `remote_write`, and
 `remote_apply`. Consult our [documentation][timescale-streamrep-docs] for
 further details about trade-offs (i.e., performance vs. lag time, etc).
-
-[timescale-streamrep-docs][localhost/NA]
