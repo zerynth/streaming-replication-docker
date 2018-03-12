@@ -9,7 +9,6 @@ psql -U postgres -c "SET password_encryption = 'scram-sha-256'; CREATE ROLE $REP
 cat >> ${PGDATA}/postgresql.conf <<EOF
 listen_addresses= '*'
 wal_level = replica
-hot_standby = on
 max_wal_senders = 2
 max_replication_slots = 2
 synchronous_commit = ${SYNCHRONOUS_COMMIT}
