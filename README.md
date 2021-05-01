@@ -1,3 +1,11 @@
+# TimescaleDB replication updated to PG-12
+
+Postgres 12 changed the way replication is performed between master and replica.
+In particular the `recovery.conf` file has been replaced by signal files.
+This is a patch of the original TimescaleDB replication repository for PG12.
+
+
+
 # Streaming Replication Container Setup for TimescaleDB
 
 Use this repository to launch a streaming replication enabled TimescaleDB
