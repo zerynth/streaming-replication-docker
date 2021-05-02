@@ -1,3 +1,3 @@
-FROM timescale/timescaledb:latest-pg12
+FROM timescale/timescaledb:latest-pg13
 
 ADD replication.sh /docker-entrypoint-initdb.d/

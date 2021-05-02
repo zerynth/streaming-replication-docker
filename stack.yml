@@ -9,6 +9,8 @@ services:
 #        REPLICATION_SUBNET: '10.0.0.0/24'
     ports:
         - 5432:5432
+    networks:
+        - ztsdb
 
   timescale-replica:
     image: timescale-replication:latest
@@ -16,3 +18,9 @@ services:
         - replica.env
     ports:
         - 5433:5432
+    networks:
+        - ztsdb
+
+networks:
+  ztsdb:
+    name: ztsdb

@@ -12,6 +12,8 @@ wal_level = replica
 max_wal_senders = 2
 max_replication_slots = 2
 synchronous_commit = ${SYNCHRONOUS_COMMIT}
+wal_keep_size = ${WAL_KEEP_SIZE}
+wal_sender_timeout = ${WAL_SENDER_TIMEOUT}
 EOF
 
 # Add synchronous standby names if we're in one of the synchronous commit modes
